@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 const { Sequelize, DataTypes, Model } = require('sequelize');
+const request = require('request');
 
 // 连接postgres数据库
 const sequelize = new Sequelize('register-hw', 'helloworld', 'hw2022', {
@@ -72,6 +73,27 @@ router.get('/', async function(req, res, next) {
   try {
     await sequelize.authenticate();
     console.log('数据库成功连接.');
+    console.log('尝试连接梦网云');
+    let Mapi = {
+      'apikey': '190f304e388e9516a8d90e38cee777ed',
+      'mobile': '19818501062',
+      'content': '验证码：1234，打死都不要告诉别人哦！'
+    }
+    // 将Mapi.content内容转为urlencode格式
+    Mapi.content = encodeURIComponent(Mapi.content);
+    const options = {
+      url: 'http://api01.monyun.cn:7901/sms/v2/std/single_send',
+      json: true,
+      body: Mapi,
+    }
+    request.post(options, (err, res, body) => {
+      // console.log(req);
+      console.log(res);
+      console.log(body);
+      if (err) {
+        console.log(err);
+      }
+    })
   } catch (error) {
     console.error('数据库连接失败:', error);
   }

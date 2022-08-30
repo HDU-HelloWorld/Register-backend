@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 const { Sequelize, DataTypes, Model } = require('sequelize');
 const request = require('request');
+const { encodeGBK } = require('gbk-string');
 
 // 连接postgres数据库
 const sequelize = new Sequelize('register-hw', 'helloworld', 'hw2022', {
@@ -77,10 +78,11 @@ router.get('/', async function(req, res, next) {
     let Mapi = {
       'apikey': '190f304e388e9516a8d90e38cee777ed',
       'mobile': '19818501062',
-      'content': '验证码：1234，打死都不要告诉别人哦！'
+      'content': "验证码：1234，打死都不要告诉别人哦！"
+      // 'content': "%d1%e9%d6%a4%c2%eb%a3%ba6666%a3%ac%b4%f2%cb%c0%b6%bc%b2%bb%d2%aa%b8%e6%cb%df%b1%f0%c8%cb%c5%b6%a3%a1"
     }
-    // 将Mapi.content内容转为urlencode格式
-    Mapi.content = encodeURIComponent(Mapi.content);
+    // 将Mapi.content内容转为GBK明文格式
+    Mapi.content = encodeGBK(Mapi.content);
     const options = {
       url: 'http://api01.monyun.cn:7901/sms/v2/std/single_send',
       json: true,
@@ -88,8 +90,9 @@ router.get('/', async function(req, res, next) {
     }
     request.post(options, (err, res, body) => {
       // console.log(req);
-      console.log(res);
+      // console.log(res);
       console.log(body);
+      console.log(Mapi.content);
       if (err) {
         console.log(err);
       }

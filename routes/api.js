@@ -146,4 +146,22 @@ router.post('/getAuthCode', async function (req, res, next) {
   res.send('验证码发送成功')
 })
 
+router.get('/query', async (req, res, next) => {
+  try {
+    userInfo = req.query
+    console.log(userInfo)
+    const user = await User.findOne({
+      where: {
+        stuNum: userInfo.stuNum,
+        name: userInfo.name
+      }
+    })
+    console.log(user)
+    res.send(user)
+  } catch (error) {
+    console.log(error)
+    res.status(500).send('查询失败')
+  }
+})
+
 module.exports = router

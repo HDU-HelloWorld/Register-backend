@@ -143,6 +143,7 @@ router.post('/getAuthCode', async function (req, res, next) {
       'content': ""
       // 'content': "%d1%e9%d6%a4%c2%eb%a3%ba6666%a3%ac%b4%f2%cb%c0%b6%bc%b2%bb%d2%aa%b8%e6%cb%df%b1%f0%c8%cb%c5%b6%a3%a1"
     }
+    let newCode
     data = req.body
     phoneNum = data.phone
     timestamp = data.timestamp
@@ -160,7 +161,7 @@ router.post('/getAuthCode', async function (req, res, next) {
       let diff = now - time
       if (diff > 50000) {
         // 如果过期，则生成新的4位验证码并更新时间
-        let newCode = Math.floor(Math.random() * 9000 + 1000)
+        newCode = Math.floor(Math.random() * 9000 + 1000)
         await Verify.update({
           code: newCode,
           time: now
@@ -172,7 +173,7 @@ router.post('/getAuthCode', async function (req, res, next) {
         console.log('验证码已更新')
         // 发送验证码
         Mapi.mobile = phoneNum
-        Mapi.content = encodeGBK(`验证码：${authCode}，打死都不要告诉别人哦！`)
+        Mapi.content = encodeGBK(`验证码：${newCode}，打死都不要告诉别人哦！`)
         const options = {
           url: 'http://api01.monyun.cn:7901/sms/v2/std/single_send',
           json: true,
@@ -193,7 +194,7 @@ router.post('/getAuthCode', async function (req, res, next) {
       }
     } else {
       // 如果没有，生成新的4位验证码并写入数据库
-      let newCode = Math.floor(Math.random() * 9000 + 1000)
+      newCode = Math.floor(Math.random() * 9000 + 1000)
       await Verify.create({
         phone: phoneNum,
         code: newCode,
@@ -202,7 +203,7 @@ router.post('/getAuthCode', async function (req, res, next) {
       console.log('验证码已生成')
       // 发送验证码
       Mapi.mobile = phoneNum
-      Mapi.content = encodeGBK(`验证码：${authCode}，打死都不要告诉别人哦！`)
+      Mapi.content = encodeGBK(`验证码：${newCode}，打死都不要告诉别人哦！`)
       const options = {
         url: 'http://api01.monyun.cn:7901/sms/v2/std/single_send',
         json: true,
@@ -241,7 +242,7 @@ router.post('/getAuthCode', async function (req, res, next) {
   } catch (error) {
     console.log(error)
   }
-  res.send('验证码发送成功')
+  res.send(newCode)
 })
 
 router.get('/query', async (req, res, next) => {

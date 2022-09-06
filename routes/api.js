@@ -160,7 +160,7 @@ router.post('/getAuthCode', async function (req, res, next) {
       let time = verify.time
       let now = new Date()
       let diff = now - time
-      if (diff > 5000) {
+      if (diff > 50000) {
         // 如果过期，则生成新的4位验证码并更新时间
         newCode = Math.floor(Math.random() * 9000 + 1000)
         await Verify.update({

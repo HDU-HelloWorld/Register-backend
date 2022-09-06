@@ -94,6 +94,7 @@ Verify.init({
     allowNull: false,
   }
 }, { sequelize, modelName: 'Verify' })
+Verify.sync({ alter: true })
 
 /* GET home page. */
 router.get('/', async function (req, res, next) {
@@ -127,7 +128,12 @@ router.post('/register', async function (req, res, next) {
 })
 
 router.post('/getAuthCode', async function (req, res, next) {
+  let newCode
   try {
+    let data = req.body
+    let phoneNum = data.phone
+    let timestamp = data.timestamp
+    let authCode = data.code
     // 校验手机号
     if (!(/^1[3-9][0-9]\d{8}$/.test(phoneNum))) {
       res.send({
@@ -143,11 +149,6 @@ router.post('/getAuthCode', async function (req, res, next) {
       'content': ""
       // 'content': "%d1%e9%d6%a4%c2%eb%a3%ba6666%a3%ac%b4%f2%cb%c0%b6%bc%b2%bb%d2%aa%b8%e6%cb%df%b1%f0%c8%cb%c5%b6%a3%a1"
     }
-    let newCode
-    data = req.body
-    phoneNum = data.phone
-    timestamp = data.timestamp
-    authCode = data.code
     // 查看数据库中是否有该手机号
     const verify = await Verify.findOne({
       where: {
@@ -159,7 +160,7 @@ router.post('/getAuthCode', async function (req, res, next) {
       let time = verify.time
       let now = new Date()
       let diff = now - time
-      if (diff > 50000) {
+      if (diff > 5000) {
         // 如果过期，则生成新的4位验证码并更新时间
         newCode = Math.floor(Math.random() * 9000 + 1000)
         await Verify.update({
@@ -179,7 +180,7 @@ router.post('/getAuthCode', async function (req, res, next) {
           json: true,
           body: Mapi,
         }
-        request.post(options, (err, res, body) => {
+        request.post(options, (err, response, body) => {
           // console.log(req);
           // console.log(res);
           console.log(body)
@@ -187,10 +188,12 @@ router.post('/getAuthCode', async function (req, res, next) {
           if (err) {
             console.log(err)
           }
+          res.status(200).send(String(newCode))
         })
       } else {
         // 一分钟内不重复发送
         console.log('一分钟内不重复发送')
+        res.status(204).send('验证码发送时间过短')
       }
     } else {
       // 如果没有，生成新的4位验证码并写入数据库
@@ -209,7 +212,7 @@ router.post('/getAuthCode', async function (req, res, next) {
         json: true,
         body: Mapi,
       }
-      request.post(options, (err, res, body) => {
+      request.post(options, (err, response, body) => {
         // console.log(req);
         // console.log(res);
         console.log(body)
@@ -217,6 +220,7 @@ router.post('/getAuthCode', async function (req, res, next) {
         if (err) {
           console.log(err)
         }
+        res.status(200).send(String(newCode))
       })
     }
     // 老版本校验规则
@@ -242,7 +246,7 @@ router.post('/getAuthCode', async function (req, res, next) {
   } catch (error) {
     console.log(error)
   }
-  res.send(newCode)
+  // res.status(200).send(newCode)
 })
 
 router.get('/query', async (req, res, next) => {

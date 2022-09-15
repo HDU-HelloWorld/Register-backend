@@ -270,6 +270,9 @@ router.get('/query', async (req, res, next) => {
 router.post('/draw', async (req, res, next) => {
   // 抽奖逻辑函数
   try {
+    // test
+    console.log(req)
+    res.send(true, '小零食', '三等奖')
     // 获取用户信息
     userInfo = req.body
     console.log(userInfo)
@@ -294,6 +297,13 @@ router.post('/draw', async (req, res, next) => {
           // 如果有抽奖资格，判断是否有抽奖次数
           if (user.times > 0) {
             // 抽奖，1/700概率中奖
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.log(err)
+  }
 })
 
 module.exports = router

@@ -267,4 +267,33 @@ router.get('/query', async (req, res, next) => {
   }
 })
 
+router.post('/draw', async (req, res, next) => {
+  // 抽奖逻辑函数
+  try {
+    // 获取用户信息
+    userInfo = req.body
+    console.log(userInfo)
+    // 查询数据库中是否有该用户
+    const user = await User.findOne({
+      where: {
+        stuNum: userInfo.stuNum,
+        name: userInfo.name
+      }
+    })
+    console.log(user)
+    // 如果没有该用户，返回错误信息
+    if (!user) {
+      res.status(500).send('用户不存在')
+    } else {
+      // 如果有该用户，判断是否已经抽过奖
+      if (user.drawn) {
+        res.status(500).send('您已经抽过奖了')
+      } else {
+        // 如果没有抽过奖，判断是否有抽奖资格
+        if (user.qualified) {
+          // 如果有抽奖资格，判断是否有抽奖次数
+          if (user.times > 0) {
+            // 抽奖，1/700概率中奖
+})
+
 module.exports = router

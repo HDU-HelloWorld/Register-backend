@@ -270,9 +270,21 @@ router.get('/query', async (req, res, next) => {
 router.post('/draw', async (req, res, next) => {
   // 抽奖逻辑函数
   try {
+    // 回传的数据
+    let data = {
+      // 剩余抽奖次数
+      remain: 0,
+      // 抽奖结果
+      result: {
+        // 奖品名称
+        name: '小零食',
+        // 奖品级别
+        level: '三等奖'
+      }
+    }
     // test
     console.log(req)
-    res.status(200).send(1, '小零食', '三等奖')
+    res.status(200).send(data)
     // 获取用户信息
     userInfo = req.body
     console.log(userInfo)

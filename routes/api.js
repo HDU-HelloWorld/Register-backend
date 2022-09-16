@@ -11,6 +11,7 @@ const sequelize = new Sequelize('register-hw', 'helloworld', 'hw2022', {
 })
 class User extends Model { }
 class Verify extends Model { }
+class Draw extends Model { }
 
 
 User.init({
@@ -66,7 +67,12 @@ User.init({
   honor: {// 获奖经历
     type: DataTypes.TEXT,
     allowNull: true,
-  }
+  },
+  qualified: {  // 剩余抽奖次数
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 1,
+  },
 }, { sequelize, modelName: 'NewMember' })
 User.sync({ alter: true })
 
@@ -95,6 +101,36 @@ Verify.init({
   }
 }, { sequelize, modelName: 'Verify' })
 Verify.sync({ alter: true })
+
+// 存放奖品数据
+Verify.init({
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  },
+  remain: {
+    // 剩余奖品数量
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  first: {
+    // 一等奖数量
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  second: {
+    // 二等奖数量
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  third: {
+    // 三等奖数量
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+}, { sequelize, modelName: 'Awards' })
+Draw.sync({ alter: true })
 
 /* GET home page. */
 router.get('/', async function (req, res, next) {
@@ -271,10 +307,10 @@ router.post('/draw', async (req, res, next) => {
   // 抽奖逻辑函数
   try {
     // test
-    console.log(req)
-    res.send(true, '小零食', '三等奖')
+    // console.log(req)
+    // res.send(true, '小零食', '三等奖')
     // 获取用户信息
-    userInfo = req.body
+    userInfo = req.body.params
     console.log(userInfo)
     // 查询数据库中是否有该用户
     const user = await User.findOne({
@@ -288,18 +324,8 @@ router.post('/draw', async (req, res, next) => {
     if (!user) {
       res.status(500).send('用户不存在')
     } else {
-      // 如果有该用户，判断是否已经抽过奖
-      if (user.drawn) {
-        res.status(500).send('您已经抽过奖了')
-      } else {
-        // 如果没有抽过奖，判断是否有抽奖资格
-        if (user.qualified) {
-          // 如果有抽奖资格，判断是否有抽奖次数
-          if (user.times > 0) {
-            // 抽奖，1/700概率中奖
-          }
-        }
-      }
+      // 如果有该用户，判断剩余抽奖次数
+      if (user.qualified)
     }
   } catch (err) {
     console.log(err)

@@ -272,7 +272,7 @@ router.post('/draw', async (req, res, next) => {
   try {
     // test
     console.log(req)
-    res.send(true, '小零食', '三等奖')
+    res.status(200).send(1, '小零食', '三等奖')
     // 获取用户信息
     userInfo = req.body
     console.log(userInfo)

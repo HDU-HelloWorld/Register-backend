@@ -103,7 +103,7 @@ Verify.init({
 Verify.sync({ alter: true })
 
 // 存放奖品数据
-Verify.init({
+Draw.init({
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,

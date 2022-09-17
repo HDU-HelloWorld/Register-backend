@@ -313,9 +313,9 @@ router.post('/draw', async (req, res, next) => {
       // 抽奖结果
       result: {
         // 奖品名称
-        name: '小零食',
+        name: '',
         // 奖品级别
-        level: '三等奖'
+        level: ''
       }
     }
     // test
@@ -337,7 +337,329 @@ router.post('/draw', async (req, res, next) => {
       res.status(500).send('用户不存在')
     } else {
       // 如果有该用户，判断剩余抽奖次数
-      if (user.qualified)
+      if (user.qualified === 0) {
+        data.remain = -1
+        res.status(200).send(data)
+      } else {
+        // 判断是否还有奖品
+        const price = await Draw.findOne({
+          where: {
+            id: 1
+          }
+        })
+        if (price.remain === 0) {
+          // 未中奖
+          data.remain = user.qualified - 1
+          data.result.name = '小零食'
+          data.result.level = '感谢参与'
+          res.status(200).send(data)
+        }
+        // 抽奖，中奖概率为1/300
+        const random = Math.floor(Math.random() * 300)
+        if (random === 0) {
+          // 判断二等奖数量
+          if (price.second === 1) {
+            // 判断是否还有一等奖
+            if (price.first === 0) {
+              // 判断是否还有二等奖
+              if (price.second === 1 && price.third === 0) {
+                // 中二等奖
+                data.result.name = '小米手环6'
+                data.result.level = '二等奖'
+                data.remain = user.qualified - 1
+                // 更新数据库
+                await Draw.update({
+                  second: 0
+                }, {
+                  where: {
+                    id: 1
+                  }
+                })
+                await User.update({
+                  qualified: user.qualified - 1
+                }, {
+                  where: {
+                    stuNum: userInfo.stuNum,
+                    name: userInfo.name
+                  }
+                })
+              }
+              // 中三等奖
+              data.result.name = '旅行七件套'
+              data.result.level = '三等奖'
+              data.remain = user.qualified - 1
+              // 更新数据库
+              await User.update({
+                qualified: user.qualified - 1
+              }, {
+                where: {
+                  stuNum: userInfo.stuNum,
+                  name: userInfo.name
+                }
+              })
+              await Draw.update({
+                third: price.third - 1
+              }, {
+                where: {
+                  id: 1
+                }
+              })
+            } else {
+              // 在一三等奖中随机抽取
+              const random2 = Math.floor(Math.random() * 2)
+              if (random2 === 0) {
+                // 一等奖
+                data.result.name = '筋膜枪或电熨斗任选'
+                data.result.level = '一等奖'
+                data.remain = user.qualified - 1
+                // 更新数据库
+                await User.update({
+                  qualified: user.qualified - 1
+                }, {
+                  where: {
+                    stuNum: userInfo.stuNum,
+                    name: userInfo.name
+                  }
+                })
+                await Draw.update({
+                  first: price.first - 1
+                }, {
+                  where: {
+                    id: 1
+                  }
+                })
+              } else {
+                // 三等奖
+                data.result.name = '旅行七件套'
+                data.result.level = '三等奖'
+                data.remain = user.qualified - 1
+                // 更新数据库
+                await User.update({
+                  qualified: user.qualified - 1
+                }, {
+                  where: {
+                    stuNum: userInfo.stuNum,
+                    name: userInfo.name
+                  }
+                })
+                await Draw.update({
+                  third: price.third - 1
+                }, {
+                  where: {
+                    id: 1
+                  }
+                })
+              }
+            }
+          } else {
+            // 判断是否还有一等奖
+            if (price.first === 0 && price.third != 0) {
+              // 在一二等奖中随机抽取
+              const random2 = Math.floor(Math.random() * 2)
+              if (random2 === 0) {
+                // 二等奖
+                data.result.name = '小米手环6'
+                data.result.level = '二等奖'
+                data.remain = user.qualified - 1
+                // 更新数据库
+                await User.update({
+                  qualified: user.qualified - 1
+                }, {
+                  where: {
+                    stuNum: userInfo.stuNum,
+                    name: userInfo.name
+                  }
+                })
+                await Draw.update({
+                  second: price.second - 1
+                }, {
+                  where: {
+                    id: 1
+                  }
+                })
+              } else {
+                // 三等奖
+                data.result.name = '旅行七件套'
+                data.result.level = '三等奖'
+                data.remain = user.qualified - 1
+                // 更新数据库
+                await User.update({
+                  qualified: user.qualified - 1
+                }, {
+                  where: {
+                    stuNum: userInfo.stuNum,
+                    name: userInfo.name
+                  }
+                })
+                await Draw.update({
+                  third: price.third - 1
+                }, {
+                  where: {
+                    id: 1
+                  }
+                })
+              }
+            } else if (price.first ===0 && price.third === 0) {
+              // 中二等奖
+              data.result.name = '小米手环6'
+              data.result.level = '二等奖'
+              data.remain = user.qualified - 1
+              // 更新数据库
+              await Draw.update({
+                second: price.second - 1
+              }, {
+                where: {
+                  id: 1
+                }
+              })
+              await User.update({
+                qualified: user.qualified - 1
+              }, {
+                where: {
+                  stuNum: userInfo.stuNum,
+                  name: userInfo.name
+                }
+              })
+            } else if (price.first != 0 && price.third != 0) {
+              // 在一二三等奖中随机抽取
+              const random2 = Math.floor(Math.random() * 3)
+              if (random2 === 0) {
+                // 一等奖
+                data.result.name = '筋膜枪或电熨斗任选'
+                data.result.level = '一等奖'
+                data.remain = user.qualified - 1
+                // 更新数据库
+                await User.update({
+                  qualified: user.qualified - 1
+                }, {
+                  where: {
+                    stuNum: userInfo.stuNum,
+                    name: userInfo.name
+                  }
+                })
+                await Draw.update({
+                  first: price.first - 1
+                }, {
+                  where: {
+                    id: 1
+                  }
+                })
+              } else if (random2 === 1) {
+                // 二等奖
+                data.result.name = '小米手环6'
+                data.result.level = '二等奖'
+                data.remain = user.qualified - 1
+                // 更新数据库
+                await User.update({
+                  qualified: user.qualified - 1
+                }, {
+                  where: {
+                    stuNum: userInfo.stuNum,
+                    name: userInfo.name
+                  }
+                })
+                await Draw.update({
+                  second: price.second - 1
+                }, {
+                  where: {
+                    id: 1
+                  }
+                })
+              } else {
+                // 三等奖
+                data.result.name = '旅行七件套'
+                data.result.level = '三等奖'
+                data.remain = user.qualified - 1
+                // 更新数据库
+                await User.update({
+                  qualified: user.qualified - 1
+                }, {
+                  where: {
+                    stuNum: userInfo.stuNum,
+                    name: userInfo.name
+                  }
+                })
+                await Draw.update({
+                  third: price.third - 1
+                }, {
+                  where: {
+                    id: 1
+                  }
+                })
+              }
+            } else if (price.first != 0 && price.third === 0) {
+              // 在一二等奖中随机抽取
+              const random2 = Math.floor(Math.random() * 2)
+              if (random2 === 0) {
+                // 一等奖
+                data.result.name = '筋膜枪或电熨斗任选'
+                data.result.level = '一等奖'
+                data.remain = user.qualified - 1
+                // 更新数据库
+                await User.update({
+                  qualified: user.qualified - 1
+                }, {
+                  where: {
+                    stuNum: userInfo.stuNum,
+                    name: userInfo.name
+                  }
+                })
+                await Draw.update({
+                  first: price.first - 1
+                }, {
+                  where: {
+                    id: 1
+                  }
+                })
+              } else {
+                // 二等奖
+                data.result.name = '小米手环6'
+                data.result.level = '二等奖'
+                data.remain = user.qualified - 1
+                // 更新数据库
+                await User.update({
+                  qualified: user.qualified - 1
+                }, {
+                  where: {
+                    stuNum: userInfo.stuNum,
+                    name: userInfo.name
+                  }
+                })
+                await Draw.update({
+                  second: price.second - 1
+                }, {
+                  where: {
+                    id: 1
+                  }
+                })
+              }
+            }
+          }
+          // 奖品总数-1
+          await Draw.update({
+            remain: price.remain - 1
+          }, {
+            where: {
+              id: 1
+            }
+          })
+        } else {
+          // 未中奖
+          data.result.name = '小零食'
+          data.result.level = '感谢参与'
+          data.remain = user.qualified - 1
+          // 更新数据库
+          await User.update({
+            qualified: user.qualified - 1
+          }, {
+            where: {
+              stuNum: userInfo.stuNum,
+              name: userInfo.name
+            }
+          })
+        }
+
+      }
     }
   } catch (err) {
     console.log(err)
